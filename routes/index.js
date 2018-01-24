@@ -44,48 +44,52 @@ router.get('/matchList/', function(req, res, next){
   })
 });
 
-router.get('/expandedMatchList/', function(req, res, next){
-
+router.get('/matchListPromise/', function(req, res, next){
   const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
   let playersInGame = [];
-  axios.get(url, {headers: apiKey})
-  .then(function(response){ //this function returns a promise
-    let copy = response.data.matches
+
+  axios.get(url, {headers: apiKey}) //get list of matches
+  .then(function(response){
+    let matchList = response.data.matches
       .slice(0,4)//first 4 elements of the array (4 matches)
       .map(x => (
         {
           gameId: x.gameId,
           champion: x.champion,
           lane: x.lane
-        }));
-        console.log("these are copies of the response")
-        console.log("these are copies of the response")
-    console.log(copy)
-    copy.map(x => {
-      console.log(x.gameId);
-      axios.get(`${baseUrl}/match/v3/matches/${x.gameId}`,
-        {headers: apiKey}
-      )
-      .then(function(response){
-        playersInGame = response.data.participantIdentities.map(x => (
-          {
-            name: x.player.summonerName,
-            // x.championId,
-            id: x.participantId,
-          }));
-          console.log(playersInGame);
+        })
+    );
+    return matchList;
+  })//give list of matches over
+  .then(function(matchList){
+    console.log("list of matches")
+    console.log(matchList);
+    let promises = [] //this will hold all requests as promises to be run concurrently
+    matchList.map(x => { //for each match, get a full match details
+      let url = `${baseUrl}/match/v3/matches/${x.gameId}`;
+      promises.push(axios.get(url, {headers: apiKey}));
+    })
+    return Promise.all(promises)
+      .then(function(allPromiseValues){
+        console.log("here are all the values");
+        return allPromiseValues;
       })
-      .catch(function(error){
-        console.log("there was an error " );
+      .catch(function (error) {
+        console.log("no data");
+        console.log(error);
       })
-    });
-    // res.send(playersInGame);
   })
-  .then(function(){
-    res.send(playersInGame)
+  .then(function(promisedVal){
+    console.log("received all promice val finally");
+    res.send(promisedVal.map(x => {
+      return x.data;
+    }))
   })
   .catch(function(error){
+    console.log("there was an error");
     console.log(error);
+    res.send(error)
   })
-});
+})
+
 module.exports = router;
