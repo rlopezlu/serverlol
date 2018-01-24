@@ -3,9 +3,16 @@ var router = express.Router();
 var axios = require('axios');
 require('dotenv').config();
 
-
 const apiKey = {'X-Riot-Token' : process.env.API_KEY};
-const accountId = 50308642;
+const RUL_ACC = process.env.RUL_ACC;
+const MAN_ACC = process.env.MAN_ACC;
+const LOON_ACC = process.env.LOON_ACC;
+const JC_ACC = process.env.JC_ACC;
+const TER_ACC = process.env.TER_ACC;
+
+let accountId = MAN_ACC;
+let ACCOUNT_2 = TER_ACC;
+
 const baseUrl = 'https://na1.api.riotgames.com/lol';
 
 router.get('/', function(req, res, next){
@@ -44,9 +51,13 @@ router.get('/matchList/', function(req, res, next){
   })
 });
 
+
+/*
+TODO refactor matchlist to just return reponse.data.matches.map()
+TODO get rid of logs
+*/
 router.get('/matchListPromise/', function(req, res, next){
   const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
-  let playersInGame = [];
 
   axios.get(url, {headers: apiKey}) //get list of matches
   .then(function(response){
@@ -84,6 +95,62 @@ router.get('/matchListPromise/', function(req, res, next){
     res.send(promisedVal.map(x => {
       return x.data;
     }))
+  })
+  .catch(function(error){
+    console.log("there was an error");
+    console.log(error);
+    res.send(error)
+  })
+})
+
+
+
+router.get('/findFriend/', function(req, res, next){
+  const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
+
+  axios.get(url, {headers: apiKey}) //get list of matches
+  .then(function(response){ //TODO get rid of then since no async is done
+    let matchList = response.data.matches
+      .slice(0,10)//first 4 elements of the array (4 matches)
+      .map(x => (
+        {
+          gameId: x.gameId,
+          champion: x.champion,
+          lane: x.lane
+        })
+    );
+    return matchList;
+  })//give list of matches over
+  .then(function(matchList){
+    console.log("list of matches")
+    console.log(matchList);
+    let promises = [] //this will hold all requests as promises to be run concurrently
+    matchList.map(x => { //for each match, get a full match details
+      let url = `${baseUrl}/match/v3/matches/${x.gameId}`;
+      promises.push(axios.get(url, {headers: apiKey}));
+    })
+    return Promise.all(promises)
+      .then(function(allPromiseValues){
+        console.log("here are all the values");
+        return allPromiseValues;
+      })
+      .catch(function (error) {
+        console.log("no data");
+        console.log(error);
+      })
+  })
+  .then(function(promisedVal){
+    console.log("received all promice val finally");
+    let filteredData = promisedVal.map(x => {
+      return x.data;
+    })
+    let gamesWithFriend = filteredData.filter(match => {//each game
+      let foundName = match.participantIdentities.filter( identity => { //if match, return player obj
+        return identity.player.accountId == ACCOUNT_2
+      })
+      return foundName.length > 0// if player found, return match obj
+    })
+    res.send(gamesWithFriend)
   })
   .catch(function(error){
     console.log("there was an error");
