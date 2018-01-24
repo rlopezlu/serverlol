@@ -5,12 +5,21 @@ require('dotenv').config();
 
 
 const apiKey = {'X-Riot-Token' : process.env.API_KEY};
+const accountId = 50308642;
+const baseUrl = 'https://na1.api.riotgames.com/lol';
+
+router.get('/', function(req, res, next){
+  res.send('welcome to this page lol')
+})
 
 /* GET home page. */
 router.get('/sumNameId/:name', function(req, res, next) {
+  //get funciton returns a promise
+  //then takes in a promise and a callback that handles the reponse of that promise
+  //catch is used if fails
   axios.get(
     // `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${req.params.name}?api_key=RGAPI-1c906d75-696b-46f2-b046-1870f69cb995`
-    `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${req.params.name}`,
+    `${baseUrl}/summoner/v3/summoners/by-name/${req.params.name}`,
     { headers: apiKey })
     .then(function(response){
       console.log(response.data)
@@ -22,11 +31,12 @@ router.get('/sumNameId/:name', function(req, res, next) {
 });
 
 router.get('/matchList/', function(req, res, next){
-  const url = 'https://na1.api.riotgames.com/lol/match/v3/matchlists/by-account/50308642'
+  const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
   axios.get(url, {
     headers: apiKey
   })
   .then(function(response){
+    response.data.matches = response.data.matches.slice(0,4);
     console.log(response.data);
     res.send(response.data);
   }).catch(function(error){
@@ -35,23 +45,25 @@ router.get('/matchList/', function(req, res, next){
 });
 
 router.get('/expandedMatchList/', function(req, res, next){
-  const baseUrl = 'https://na1.api.riotgames.com/lol/';
-  const url = baseUrl + 'match/v3/matchlists/by-account/50308642';
+
+  const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
   let playersInGame = [];
   axios.get(url, {headers: apiKey})
   .then(function(response){ //this function returns a promise
     let copy = response.data.matches
-      .slice(0,4)//first 4 elements of the array
+      .slice(0,4)//first 4 elements of the array (4 matches)
       .map(x => (
         {
           gameId: x.gameId,
           champion: x.champion,
           lane: x.lane
         }));
+        console.log("these are copies of the response")
+        console.log("these are copies of the response")
     console.log(copy)
     copy.map(x => {
       console.log(x.gameId);
-      axios.get(`https://na1.api.riotgames.com/lol/match/v3/matches/${x.gameId}`,
+      axios.get(`${baseUrl}/match/v3/matches/${x.gameId}`,
         {headers: apiKey}
       )
       .then(function(response){
