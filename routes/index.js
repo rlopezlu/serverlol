@@ -11,7 +11,7 @@ const JC_ACC = process.env.JC_ACC;
 const TER_ACC = process.env.TER_ACC;
 
 let accountId = MAN_ACC;
-let ACCOUNT_2 = TER_ACC;
+let ACCOUNT_2 = JC_ACC;
 
 const baseUrl = 'https://na1.api.riotgames.com/lol';
 
@@ -25,7 +25,6 @@ router.get('/sumNameId/:name', function(req, res, next) {
   //then takes in a promise and a callback that handles the reponse of that promise
   //catch is used if fails
   axios.get(
-    // `https://na1.api.riotgames.com/lol/summoner/v3/summoners/by-name/${req.params.name}?api_key=RGAPI-1c906d75-696b-46f2-b046-1870f69cb995`
     `${baseUrl}/summoner/v3/summoners/by-name/${req.params.name}`,
     { headers: apiKey })
     .then(function(response){
@@ -144,13 +143,45 @@ router.get('/findFriend/', function(req, res, next){
     let filteredData = promisedVal.map(x => {
       return x.data;
     })
+    let foundName;
     let gamesWithFriend = filteredData.filter(match => {//each game
-      let foundName = match.participantIdentities.filter( identity => { //if match, return player obj
-        return identity.player.accountId == ACCOUNT_2
-      })
-      return foundName.length > 0// if player found, return match obj
+      match.participantIdentities = match.participantIdentities.filter( identity => { //if match, return player obj
+        return identity.player.accountId == ACCOUNT_2 || identity.player.accountId == accountId
+      })//TODO figure out if this is a safe way of making sure
+      return match.participantIdentities[0] && match.participantIdentities[1]
     })
-    res.send(gamesWithFriend)
+
+    let quickInfo = {
+      sumName: null,
+      champName: null,
+      sumId: null,
+      friend: null,
+      friendChamp: null,
+      friendId: null
+    }
+
+    gamesWithFriend.map(x => {
+      let info = (x.participantIdentities);
+      let nameIndex = (info[0].player.accountId == accountId ? 0 : 1);
+
+      quickInfo.sumName = info[nameIndex].player.summonerName;
+      quickInfo.sumId = info[nameIndex].participantId;
+      quickInfo.champName = x.participants[quickInfo.sumId].championId;
+
+      quickInfo.friend = info[1-nameIndex].player.summonerName;
+      quickInfo.friendId = info[1-nameIndex].participantId;
+      console.log("info ");
+      console.log(quickInfo)
+      quickInfo.friendChamp = x.participants[quickInfo.friendId -1].championId;
+      console.log("info ");
+      //TODO find a way to copy objects
+      x.quickInfo = Object.assign({}, quickInfo);
+    })
+    return gamesWithFriend
+  })
+  .then(function (data) {
+    axios.
+    res.send(data)
   })
   .catch(function(error){
     console.log("there was an error");
@@ -158,5 +189,12 @@ router.get('/findFriend/', function(req, res, next){
     res.send(error)
   })
 })
+
+router.get('/champion/:id', function(req, res, next){
+  axios.get(`${baseUrl}/static-data/v3/champions/${req.params.id}`, {headers: apiKey})
+    .then(function (response) {
+      res.send(response.data)
+    })
+});
 
 module.exports = router;
