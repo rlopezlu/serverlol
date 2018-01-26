@@ -105,12 +105,13 @@ router.get('/matchListPromise/', function(req, res, next){
 
 
 router.get('/findFriend/', function(req, res, next){
-  const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}`;
+  const numGames = 4;
+  const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}?endIndex=${numGames}`;
 
   axios.get(url, {headers: apiKey}) //get list of matches
   .then(function(response){ //TODO get rid of then since no async is done
     let matchList = response.data.matches
-      .slice(0,10)//first 4 elements of the array (4 matches)
+      .slice(0,4)//first 4 elements of the array (4 matches)
       .map(x => (
         {
           gameId: x.gameId,
@@ -138,8 +139,8 @@ router.get('/findFriend/', function(req, res, next){
         console.log(error);
       })
   })
-  .then(function(promisedVal){
-    console.log("received all promice val finally");
+  .then(function(promisedVal){//receive data, format it
+    console.log("received all promice values finally");
     let filteredData = promisedVal.map(x => {
       return x.data;
     })
@@ -153,35 +154,59 @@ router.get('/findFriend/', function(req, res, next){
 
     let quickInfo = {
       sumName: null,
-      champName: null,
-      sumId: null,
+      champId: null,
+      sumIndex: null,
       friend: null,
       friendChamp: null,
-      friendId: null
+      friendIndex: null
     }
 
     gamesWithFriend.map(x => {
       let info = (x.participantIdentities);
       let nameIndex = (info[0].player.accountId == accountId ? 0 : 1);
+      let team = (info[0].participantId > 5 ? 200 : 100 ) / 100 - 1;
 
       quickInfo.sumName = info[nameIndex].player.summonerName;
-      quickInfo.sumId = info[nameIndex].participantId;
-      quickInfo.champName = x.participants[quickInfo.sumId].championId;
+      quickInfo.sumIndex = info[nameIndex].participantId;
+      quickInfo.champId = x.participants[quickInfo.sumIndex -1].championId;
+      quickInfo.lane = x.participants[quickInfo.sumIndex -1].timeline.lane
+
 
       quickInfo.friend = info[1-nameIndex].player.summonerName;
-      quickInfo.friendId = info[1-nameIndex].participantId;
+      quickInfo.friendIndex = info[1-nameIndex].participantId;
+      quickInfo.friendChamp = x.participants[quickInfo.friendIndex -1].championId;
+      quickInfo.friendLane = x.participants[quickInfo.friendIndex -1].timeline.lane
+
+      quickInfo.team = team;
+      quickInfo.win = x.teams[quickInfo.team].win
+
+
       console.log("info ");
       console.log(quickInfo)
-      quickInfo.friendChamp = x.participants[quickInfo.friendId -1].championId;
-      console.log("info ");
       //TODO find a way to copy objects
       x.quickInfo = Object.assign({}, quickInfo);
     })
-    return gamesWithFriend
-  })
-  .then(function (data) {
-    axios.
-    res.send(data)
+
+    let champs = []
+    gamesWithFriend.map( x => {
+      let champID = x.quickInfo.champId
+
+      //nothing here is asynchronous, linear execution
+      champs.push(axios.get(`${baseUrl}/static-data/v3/champions/${champID}`, {headers: apiKey}))
+    })
+    return Promise.all(champs)
+       .then(function(dataWithChamps){//array with champData
+         console.log("champ data");
+         console.log(dataWithChamps)
+         return dataWithChamps
+       })
+       .catch(function(error){
+         console.log("unable to get champion");
+         console.log(error.response)
+       })
+    })
+  .then(function(dataWithChamps){
+    res.send(dataWithChamps)
   })
   .catch(function(error){
     console.log("there was an error");
@@ -194,6 +219,10 @@ router.get('/champion/:id', function(req, res, next){
   axios.get(`${baseUrl}/static-data/v3/champions/${req.params.id}`, {headers: apiKey})
     .then(function (response) {
       res.send(response.data)
+    })
+    .catch(function(error){
+      console.log("unable to get champ")
+      console.log(error.response);
     })
 });
 
