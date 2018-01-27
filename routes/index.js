@@ -2,6 +2,8 @@ var express = require('express');
 var router = express.Router();
 var axios = require('axios');
 require('dotenv').config();
+var jsonfile = require('jsonfile');
+const loadJsonFile = require('load-json-file')
 
 const apiKey = {'X-Riot-Token' : process.env.API_KEY};
 const RUL_ACC = process.env.RUL_ACC;
@@ -17,6 +19,18 @@ const baseUrl = 'https://na1.api.riotgames.com/lol';
 
 router.get('/', function(req, res, next){
   res.send('welcome to this page lol')
+})
+
+router.get('/fakeData', function (req, res, next) {
+  var file = 'newSample.json'
+  loadJsonFile(file).then( data =>{
+    res.send(data)
+  }).catch(err => console.log(err))
+  // jsonfile.readFile(file, function (err, obj) {
+  //   if (err) {console.log(err); return}
+  //   console.log(obj)
+  //   res.send(obj)
+  // })
 })
 
 /* GET home page. */
