@@ -90,7 +90,7 @@ router.get('/matchListPromise/', function(req, res, next){
       })
   })
   .then(function(promisedVal){
-    console.log("received all promice val finally");
+    console.log("received all promise val finally");
     res.send(promisedVal.map(x => {
       return x.data;
     }))
@@ -105,13 +105,13 @@ router.get('/matchListPromise/', function(req, res, next){
 
 
 router.get('/findFriend/', function(req, res, next){
-  const numGames = 4;
+  const numGames = 3;
   const url = `${baseUrl}/match/v3/matchlists/by-account/${accountId}?endIndex=${numGames}`;
 
   axios.get(url, {headers: apiKey}) //get list of matches
   .then(function(response){ //TODO get rid of then since no async is done
     let matchList = response.data.matches
-      .slice(0,4)//first 4 elements of the array (4 matches)
+      .slice(0,numGames)//first 4 elements of the array (4 matches)
       .map(x => (
         {
           gameId: x.gameId,
@@ -125,11 +125,12 @@ router.get('/findFriend/', function(req, res, next){
     console.log("list of matches")
     console.log(matchList);
     let promises = [] //this will hold all requests as promises to be run concurrently
+    console.log(matchList.length +" matches, so that many requests")
     matchList.map(x => { //for each match, get a full match details
       let url = `${baseUrl}/match/v3/matches/${x.gameId}`;
       promises.push(axios.get(url, {headers: apiKey}));
     })
-    return Promise.all(promises)
+    return Promise.all(promises)//for each match, get a full match details
       .then(function(allPromiseValues){
         console.log("here are all the values");
         return allPromiseValues;
@@ -140,7 +141,7 @@ router.get('/findFriend/', function(req, res, next){
       })
   })
   .then(function(promisedVal){//receive data, format it
-    console.log("received all promice values finally");
+    console.log("received all promise values finally");
     let filteredData = promisedVal.map(x => {
       return x.data;
     })
@@ -161,6 +162,7 @@ router.get('/findFriend/', function(req, res, next){
       friendIndex: null
     }
 
+    //pull out information about the two summoners
     gamesWithFriend.map(x => {
       let info = (x.participantIdentities);
       let nameIndex = (info[0].player.accountId == accountId ? 0 : 1);
@@ -185,20 +187,30 @@ router.get('/findFriend/', function(req, res, next){
       console.log(quickInfo)
       //TODO find a way to copy objects
       x.quickInfo = Object.assign({}, quickInfo);
+      //TODO figure out if this works
+      //x.quickInfo = quickInfo
     })
 
     let champs = []
-    gamesWithFriend.map( x => {
+    //TODO already have a gamesWithFriend map above, remove duplicate code
+    gamesWithFriend.map( x => { // for each game, find each champ name
       let champID = x.quickInfo.champId
+      let friendChampId = x.quickInfo.friendChamp
 
       //nothing here is asynchronous, linear execution
       champs.push(axios.get(`${baseUrl}/static-data/v3/champions/${champID}`, {headers: apiKey}))
+      champs.push(axios.get(`${baseUrl}/static-data/v3/champions/${friendChampId}`, {headers: apiKey}))
     })
-    return Promise.all(champs)
+    return Promise.all(champs) // array has 2x number of matches
        .then(function(dataWithChamps){//array with champData
          console.log("champ data");
-         console.log(dataWithChamps)
-         return dataWithChamps
+         // return gamesWithFriend
+         dataWithChamps.map(champResponse => {//for every champ request
+           gamesWithFriend.push(champResponse.data)
+         })
+         // gamesWithFriend.push(dataWithChamps)
+         console.log("returning data with champ names also");
+         return gamesWithFriend
        })
        .catch(function(error){
          console.log("unable to get champion");
@@ -206,6 +218,8 @@ router.get('/findFriend/', function(req, res, next){
        })
     })
   .then(function(dataWithChamps){
+    //got all of the data at the end
+    console.log('got all of the data at the end');
     res.send(dataWithChamps)
   })
   .catch(function(error){
