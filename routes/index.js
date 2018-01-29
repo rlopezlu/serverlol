@@ -22,15 +22,10 @@ router.get('/', function(req, res, next){
 })
 
 router.get('/fakeData', function (req, res, next) {
-  var file = 'newSample.json'
+  var file = 'sampleJsonResponse.json'
   loadJsonFile(file).then( data =>{
-    res.send(data)
+    res.json(data)
   }).catch(err => console.log(err))
-  // jsonfile.readFile(file, function (err, obj) {
-  //   if (err) {console.log(err); return}
-  //   console.log(obj)
-  //   res.send(obj)
-  // })
 })
 
 /* GET home page. */

@@ -1,4 +1,4 @@
-#script to convert downloaded json data that was not formatted properly
+#script to convert downloaded test json data that was not formatted properly
 #converts keys to strings, to be json compliant
 
 f = open('sampleData.json', 'r')
