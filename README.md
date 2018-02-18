@@ -20,3 +20,6 @@ $ npm start
 ```
 
 Check out the React.js project [here](https://github.com/rlopezlu/reactlol/blob/master/README.md)
+
+TODO   
+Cache responses so that data is not requested again for users who come back to site
