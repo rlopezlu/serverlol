@@ -1,6 +1,9 @@
 # LoL Match History proxy
-
 Match data powered by Riot Games [API](https://developer.riotgames.com/)  
+
+The Riot API does not allow client side requests, as a security measure to prevent API keys from being exposed.  
+Instead, we make requests through a node.js and express proxy server.   
+
 Created with [express-generator](https://www.npmjs.com/package/express-generator)  
 [Axios](https://www.npmjs.com/package/axios) was used for http requests due to its usage of Promises  
 
