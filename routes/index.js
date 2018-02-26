@@ -40,6 +40,7 @@ router.get("/champions", function(req, res, next){
 });
 
 router.get('/sumNameId/:region/:name', function(req, res, next) {
+  console.log("searching riot api for user ");
   //get function returns a promise
   //then passes another promise to a callback
   //catch is used if fails
@@ -50,6 +51,7 @@ router.get('/sumNameId/:region/:name', function(req, res, next) {
     { headers: apiKey })
     .then(function(response){
       console.log(response.data)
+      console.log(response);
       console.log(response.headers);
       res.send(response.data);
     })
