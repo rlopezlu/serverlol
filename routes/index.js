@@ -5,6 +5,7 @@ require('dotenv').config();
 const loadJsonFile = require('load-json-file')
 
 const apiKey = {'X-Riot-Token' : process.env.API_KEY};
+
 const RUL_ACC = process.env.RUL_ACC;
 const MAN_ACC = process.env.MAN_ACC;
 const LOON_ACC = process.env.LOON_ACC;
