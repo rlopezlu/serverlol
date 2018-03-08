@@ -89,7 +89,7 @@
    {
       "id":9,
       "name":"Fiddlesticks",
-      "alias":"Fiddlesticks",
+      "alias":"FiddleSticks",
       "squarePortraitPath":"/lol-game-data/assets/v1/champion-icons/9.png",
       "roles":[
          "mage",
@@ -1096,6 +1096,15 @@
       "roles":[
          "mage",
          "support"
+      ]
+   },
+   {
+      "id":145,
+      "name":"Kai'Sa",
+      "alias":"Kaisa",
+      "squarePortraitPath":"/lol-game-data/assets/v1/champion-icons/145.png",
+      "roles":[
+         "marksman"
       ]
    },
    {
