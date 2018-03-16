@@ -6,6 +6,8 @@ const loadJsonFile = require('load-json-file')
 
 //TODO make sure region is working correctly everywhere it is needed
 //TODO make sure version is checked for daily, update it as needed
+//TODO get champion data using champion/id endpoing
+// TODO: get queue information ????
 
 const apiKey = {'X-Riot-Token' : process.env.API_KEY};
 
@@ -34,6 +36,15 @@ router.get('/queues', function(req, res, next){
   loadJsonFile(file).then( data =>{
     res.json(data)
   }).catch(err => console.log(err))
+})
+
+router.get('/apiVersion/:region', function(req, res){
+  let url = `https://${req.params.region}.api.riotgames.com/lol/static-data/v3/versions`
+  console.log(url);
+  axios.get(url, { headers: apiKey })
+    .then(function(response){
+      res.json(response.data[0])
+    })
 })
 
 // TODO: get minified version of this file
@@ -180,6 +191,7 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
           }
           playerObj.playerIndex = onePlayer.participantId
           playerObj.sumName = onePlayer.player.summonerName;
+          playerObj.sumId = currentId;
           playerObj.icon = onePlayer.player.profileIcon;
 
           //all the properties from participants
@@ -187,19 +199,11 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
           playerObj.stats = participant.stats;
           playerObj.lane = participant.timeline.lane;
 
-          teamMatesInMatch[onePlayer.player.summonerName] = playerObj
-          // playerArray.push(playerObj);
+          teamMatesInMatch[currentId] = playerObj
         }
         // TODO: slice the teamMatesInMatch so that only team mates are sent
-        // if(team ===1){
-        //   playerArray.splice(0,5)
-        // }
-        //console.log("array of players");
-        // console.log(playerArray);
         // QUESTION: what is difference between players and playersObj
-        // TODO: get rid of playerArray, it is not used by client
         // TODO: in stats object, only send what we use
-        // matchInformation.players = playerArray;
         matchInformation.playersObj = teamMatesInMatch;
         // matchInformation.team = team;
         matchInformation.mainUserIndex = mainUserIndex -1;
