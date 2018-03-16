@@ -155,9 +155,10 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
           //if you are on the first team
           if(team === 0 && index === 5) break;
 
-          //if you are on the second team
+          //if you are on the second team, clear previous stuff you had for team members
           if(index === 5){
             teamMatesInMatch = {}
+            commonTeamMatesMap.clear()
           }
           let participant = participantsIterator.next().value[1];
           let playerObj = {}
