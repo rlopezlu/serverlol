@@ -131,7 +131,7 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
         let identities = match.participantIdentities;
         let participants = match.participants;
         let matchInformation = {};
-        let playerArray = [];
+        // let playerArray = [];
         let teamMatesInMatch = {}
         let mainUserIndex;
         let team = -1;
@@ -182,15 +182,18 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
           playerObj.lane = participant.timeline.lane;
 
           teamMatesInMatch[onePlayer.player.summonerName] = [playerObj]
-          playerArray.push(playerObj);
+          // playerArray.push(playerObj);
         }
-        if(team ===1){
-          playerArray.splice(0,5)
-        }
+        // TODO: slice the teamMatesInMatch so that only team mates are sent
+        // if(team ===1){
+        //   playerArray.splice(0,5)
+        // }
         //console.log("array of players");
         // console.log(playerArray);
         // QUESTION: what is difference between players and playersObj
-        matchInformation.players = playerArray;
+        // TODO: get rid of playerArray, it is not used by client
+        // TODO: in stats object, only send what we use
+        // matchInformation.players = playerArray;
         matchInformation.playersObj = teamMatesInMatch;
         // matchInformation.team = team;
         matchInformation.mainUserIndex = mainUserIndex -1;
