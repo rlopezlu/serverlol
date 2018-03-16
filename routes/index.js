@@ -141,7 +141,13 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
         //iterate through each player identity
         for(const [index, onePlayer] of identities.entries()){
 
+          //if you are on the first team
           if(team === 0 && index === 5) break;
+
+          //if you are on the second team
+          if(index === 5){
+            teamMatesInMatch = {}
+          }
           let participant = participantsIterator.next().value[1];
           let playerObj = {}
           let currentId = onePlayer.player.accountId;
@@ -181,7 +187,7 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
           playerObj.stats = participant.stats;
           playerObj.lane = participant.timeline.lane;
 
-          teamMatesInMatch[onePlayer.player.summonerName] = [playerObj]
+          teamMatesInMatch[onePlayer.player.summonerName] = playerObj
           // playerArray.push(playerObj);
         }
         // TODO: slice the teamMatesInMatch so that only team mates are sent
