@@ -125,12 +125,15 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
     .then(function(promisedVal){
       console.log("received all promise val finally");
       //for each match response, get only the match data
+
       let matches = promisedVal.map(singleMatchData => {
         // console.log(singlePromise.headers)
+
         return singleMatchData.data;
       })
+      // res.json(matches)
 
-
+      // TODO: figure out which team main player is on
       let commonTeamMatesMap = new Map();
 
       let teamMates = {};
@@ -145,21 +148,31 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
         // let playerArray = [];
         let teamMatesInMatch = {}
         let mainUserIndex;
-        let team = -1;
+        // let team = -1;
+
+        let mainUserIdentity =  identities.filter( playerIdentity => {
+            return playerIdentity.player.accountId == mainID
+        })
+
+        let team = mainUserIdentity.participantId < 6 ? 0 : 1;
+        let teamIndex = team*5; //either 5 or 0
+        let participantsSlice = participants.slice(teamIndex, 5+teamIndex)
+        let identitiesSlice = identities.slice(teamIndex, 5+teamIndex)
+
         //entries creates an iterator for the participants array
-        let participantsIterator = participants.entries();
+        let participantsIterator = participantsSlice.entries();
 
         //iterate through each player identity
-        for(const [index, onePlayer] of identities.entries()){
+        for(const [index, onePlayer] of identitiesSlice.entries()){
 
-          //if you are on the first team
-          if(team === 0 && index === 5) break;
+          //if you are on blue team (team 100 is 0) (team 200 is 1)
+          // if(team !== 1 && index === 5) break;
 
           //if you are on the second team, clear previous stuff you had for team members
-          if(index === 5){
-            teamMatesInMatch = {}
-            commonTeamMatesMap.clear()
-          }
+          // if(index === 5 && team ===1){
+          //   teamMatesInMatch = {}
+          //   commonTeamMatesMap.clear()
+          // }
           let participant = participantsIterator.next().value[1];
           let playerObj = {}
           let currentId = onePlayer.player.accountId;
