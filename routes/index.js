@@ -131,7 +131,7 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
 
         return singleMatchData.data;
       })
-      // res.json(matches)
+      res.json(matches)
 
       // TODO: figure out which team main player is on
       let commonTeamMatesMap = new Map();
@@ -149,12 +149,19 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
         let teamMatesInMatch = {}
         let mainUserIndex;
         // let team = -1;
-
-        let mainUserIdentity =  identities.filter( playerIdentity => {
-            return playerIdentity.player.accountId == mainID
+        console.log('GAME ----------------------------------------');
+        let mainUserIdentity =  identities.filter(playerIdentity => {
+          console.log("finding identity of main player");
+          let currentId = playerIdentity.player.accountId
+          console.log(playerIdentity);
+          console.log(currentId);
+          if(mainID == currentId) console.log("--------------------------FOUND SNEAKY");
+          console.log(mainID);
+          return playerIdentity['player']['accountId'] == mainID
         })
 
-        let team = mainUserIdentity.participantId < 6 ? 0 : 1;
+        let team = mainUserIdentity[0]participantId < 6 ? 0 : 1;
+        // console.log(mainUserIdentity[0].player.participantId);
         let teamIndex = team*5; //either 5 or 0
         let participantsSlice = participants.slice(teamIndex, 5+teamIndex)
         let identitiesSlice = identities.slice(teamIndex, 5+teamIndex)
