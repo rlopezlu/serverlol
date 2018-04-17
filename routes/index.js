@@ -149,14 +149,9 @@ router.get('/teamMatches/:region/:userID/', function(req, res, next){
         let teamMatesInMatch = {}
         let mainUserIndex;
         // let team = -1;
-        console.log('GAME ----------------------------------------');
+
         let mainUserIdentity =  identities.filter(playerIdentity => {
-          console.log("finding identity of main player");
-          let currentId = playerIdentity.player.accountId
-          console.log(playerIdentity);
-          console.log(currentId);
-          if(mainID == currentId) console.log("--------------------------FOUND SNEAKY");
-          console.log(mainID);
+          let currentId = playerIdentity.player.accountId                    
           return playerIdentity['player']['accountId'] == mainID
         })
 
