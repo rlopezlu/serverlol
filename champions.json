@@ -89,7 +89,7 @@
    {
       "id":9,
       "name":"Fiddlesticks",
-      "alias":"FiddleSticks",
+      "alias":"Fiddlesticks",
       "squarePortraitPath":"/lol-game-data/assets/v1/champion-icons/9.png",
       "roles":[
          "mage",
@@ -1378,5 +1378,15 @@
          "tank",
          "fighter"
       ]
-   }
+   },
+   {
+        "id": 555,
+        "name": "Pyke",
+        "alias": "Pyke",
+        "squarePortraitPath": "/lol-game-data/assets/v1/champion-icons/555.png",
+        "roles": [
+            "support",
+            "assassin"
+        ]
+    }
 ]
